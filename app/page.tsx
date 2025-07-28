@@ -24,11 +24,15 @@ export default function Home() {
         setCurrentMegaMenu={setCurrentMegaMenu}
       />
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <SearchBar />
-        <BrandLogos 
-          selectedBrand={selectedBrand}
-          onBrandSelect={setSelectedBrand}
-        />
+        {/* Ajout d'un wrapper sticky pour la search bar et les logos */}
+        <div className="sticky top-0 z-10 bg-gray-50 pt-4 pb-4">
+          <SearchBar />
+          <BrandLogos 
+            selectedBrand={selectedBrand}
+            onBrandSelect={setSelectedBrand}
+          />
+        </div>
+        
         <div className="flex gap-8">
           <Sidebar 
             selectedBrand={selectedBrand}
