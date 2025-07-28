@@ -7,6 +7,8 @@ import BrandLogos from '@/components/brand-logos';
 import Sidebar from '@/components/sidebar';
 import ProductGrid from '@/components/product-grid';
 
+import Footer from '@/components/footer';
+
 export default function Home() {
   const [currentMegaMenu, setCurrentMegaMenu] = useState<string | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
@@ -48,6 +50,7 @@ export default function Home() {
           />
         </div>
       </div>
+      <Footer/>
     </div>
   );
 }
