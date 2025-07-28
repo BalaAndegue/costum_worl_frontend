@@ -1,6 +1,7 @@
-import { ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useState } from 'react';
 
 const phoneModels = {
   samsung: [
@@ -44,6 +45,12 @@ interface SidebarProps {
   onFiltersChange: (filters: any) => void;
 }
 
+interface SidebarContentProps extends SidebarProps {
+  mobile?: boolean;
+  handleSortChange: (sort: string) => void;
+  handleProtectionChange: (protection: string, checked: boolean) => void;
+}
+
 export default function Sidebar({ 
   selectedBrand, 
   selectedModel, 
@@ -51,6 +58,8 @@ export default function Sidebar({
   filters, 
   onFiltersChange 
 }: SidebarProps) {
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
   const handleProtectionChange = (protection: string, checked: boolean) => {
     const newProtection = checked 
       ? [...filters.protection, protection]
@@ -63,7 +72,73 @@ export default function Sidebar({
   };
 
   return (
-    <div className="w-80 space-y-6">
+    <>
+      {/* Mobile Filters Button */}
+      <div className="lg:hidden mb-4">
+        <Button 
+          onClick={() => setMobileFiltersOpen(true)}
+          variant="outline" 
+          className="flex items-center gap-2 w-full justify-center"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          Filtres
+        </Button>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <div className={`hidden lg:block w-72 xl:w-80 space-y-6 pr-4`}>
+        <SidebarContent 
+          selectedBrand={selectedBrand}
+          selectedModel={selectedModel}
+          onModelSelect={onModelSelect}
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+          handleSortChange={handleSortChange}
+          handleProtectionChange={handleProtectionChange}
+        />
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {mobileFiltersOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 lg:hidden">
+          <div className="absolute inset-0 flex">
+            <div className="relative w-full max-w-xs bg-white h-full overflow-y-auto p-6">
+              <button 
+                onClick={() => setMobileFiltersOpen(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-500"
+              >
+                <X className="h-6 w-6" />
+              </button>
+              <SidebarContent 
+                selectedBrand={selectedBrand}
+                selectedModel={selectedModel}
+                onModelSelect={onModelSelect}
+                filters={filters}
+                onFiltersChange={onFiltersChange}
+                mobile
+                handleSortChange={handleSortChange}
+                handleProtectionChange={handleProtectionChange}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function SidebarContent({ 
+  selectedBrand, 
+  selectedModel, 
+  onModelSelect, 
+  filters, 
+  onFiltersChange,
+  mobile = false,
+  handleSortChange,
+  handleProtectionChange
+}: SidebarContentProps) {
+  return (
+    <div className={`${mobile ? 'space-y-6' : 'space-y-6'}`}>
       {/* Filters Header */}
       <div className="flex items-center space-x-2 text-gray-900 font-semibold">
         <SlidersHorizontal className="h-4 w-4" />
@@ -90,13 +165,16 @@ export default function Sidebar({
               <div key={model} className="flex items-center space-x-2">
                 <input
                   type="radio"
-                  id={model}
-                  name="phoneModel"
+                  id={`${model}-${mobile ? 'mobile' : 'desktop'}`}
+                  name={`phoneModel-${mobile ? 'mobile' : 'desktop'}`}
                   checked={selectedModel === model}
                   onChange={() => onModelSelect(selectedModel === model ? null : model)}
-                  className="text-blue-600 focus:ring-blue-500"
+                  className="text-blue-600 focus:ring-blue-500 h-4 w-4"
                 />
-                <label htmlFor={model} className="text-sm text-gray-700 cursor-pointer">
+                <label 
+                  htmlFor={`${model}-${mobile ? 'mobile' : 'desktop'}`} 
+                  className="text-sm text-gray-700 cursor-pointer"
+                >
                   {model}
                 </label>
               </div>
@@ -110,7 +188,7 @@ export default function Sidebar({
         <h3 className="font-semibold text-gray-900 mb-3">Trier</h3>
         <div className="relative">
           <select 
-            className="w-full appearance-none bg-white border border-gray-300 rounded-md px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full appearance-none bg-white border border-gray-300 rounded-md px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             value={filters.sort}
             onChange={(e) => handleSortChange(e.target.value)}
           >
@@ -127,44 +205,35 @@ export default function Sidebar({
       <div>
         <h3 className="font-semibold text-gray-900 mb-3">Protection</h3>
         <div className="space-y-3">
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="solide" 
-              checked={filters.protection.includes('solide')}
-              onCheckedChange={(checked) => handleProtectionChange('solide', checked as boolean)}
-            />
-            <label htmlFor="solide" className="text-sm text-gray-700">solide</label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="resistant" 
-              checked={filters.protection.includes('resistant')}
-              onCheckedChange={(checked) => handleProtectionChange('resistant', checked as boolean)}
-            />
-            <label htmlFor="resistant" className="text-sm text-gray-700">résistant</label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="robuste" 
-              checked={filters.protection.includes('robuste')}
-              onCheckedChange={(checked) => handleProtectionChange('robuste', checked as boolean)}
-            />
-            <label htmlFor="robuste" className="text-sm text-gray-700">robuste</label>
-          </div>
+          {['solide', 'resistant', 'robuste'].map((protection) => (
+            <div key={protection} className="flex items-center space-x-2">
+              <Checkbox 
+                id={`${protection}-${mobile ? 'mobile' : 'desktop'}`}
+                checked={filters.protection.includes(protection)}
+                onCheckedChange={(checked) => handleProtectionChange(protection, checked as boolean)}
+              />
+              <label 
+                htmlFor={`${protection}-${mobile ? 'mobile' : 'desktop'}`} 
+                className="text-sm text-gray-700 capitalize"
+              >
+                {protection}
+              </label>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Materials */}
       <div>
         <h3 className="font-semibold text-gray-900 mb-3">Matériaux</h3>
-        <Button variant="outline" className="w-full mb-3 bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200">
+        <Button variant="outline" className="w-full mb-3 bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200 text-sm">
           Tous les matériaux
         </Button>
-        <div className="flex space-x-2">
-          <Button variant="outline" className="flex-1 text-sm">
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="outline" className="text-sm py-1.5 h-auto">
             Polylactel
           </Button>
-          <Button variant="outline" className="flex-1 text-sm">
+          <Button variant="outline" className="text-sm py-1.5 h-auto">
             Spiegel
           </Button>
         </div>

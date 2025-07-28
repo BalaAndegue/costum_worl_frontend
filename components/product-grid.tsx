@@ -2,7 +2,8 @@ import { ChevronRight, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const products = [
-  {
+  // ... (votre tableau de produits existant)
+   {
     id: 1,
     title: 'Coque en silicone',
     subtitle: 'transparent',
@@ -141,78 +142,60 @@ interface ProductGridProps {
 }
 
 export default function ProductGrid({ selectedBrand, selectedModel, filters }: ProductGridProps) {
-  // Filter products based on selected brand, model, and filters
+  // Filtrage et tri des produits (identique à votre version)
   const filteredProducts = products.filter(product => {
-    // Filter by brand
-    if (selectedBrand && product.brand !== selectedBrand) {
-      return false;
-    }
-    
-    // Filter by model
-    if (selectedModel && !product.models.includes(selectedModel)) {
-      return false;
-    }
-    
-    // Filter by protection
-    if (filters.protection.length > 0) {
-      const hasMatchingProtection = filters.protection.some(p => 
-        product.protection.includes(p)
-      );
-      if (!hasMatchingProtection) {
-        return false;
-      }
-    }
-    
+    if (selectedBrand && product.brand !== selectedBrand) return false;
+    if (selectedModel && !product.models.includes(selectedModel)) return false;
+    if (filters.protection.length > 0 && !filters.protection.some(p => product.protection.includes(p))) return false;
     return true;
   });
 
-  // Sort products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (filters.sort) {
-      case 'Prix croissant':
-        return parseFloat(a.price) - parseFloat(b.price);
-      case 'Prix décroissant':
-        return parseFloat(b.price) - parseFloat(a.price);
-      case 'Nouveautés':
-        return b.isNew ? 1 : -1;
-      default:
-        return 0;
+      case 'Prix croissant': return parseFloat(a.price.replace(',', '.')) - parseFloat(b.price.replace(',', '.'));
+      case 'Prix décroissant': return parseFloat(b.price.replace(',', '.')) - parseFloat(a.price.replace(',', '.'));
+      case 'Nouveautés': return (b.isNew ? 1 : -1);
+      default: return 0;
     }
   });
 
   return (
     <div className="flex-1">
-      {/* Results header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="text-sm text-gray-600">
-          {sortedProducts.length} produit{sortedProducts.length > 1 ? 's' : ''} trouvé{sortedProducts.length > 1 ? 's' : ''}
+      {/* En-tête des résultats */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-gray-600">
+            {sortedProducts.length} produit{sortedProducts.length > 1 ? 's' : ''} trouvé{sortedProducts.length > 1 ? 's' : ''}
+          </span>
           {selectedBrand && (
-            <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs capitalize">
+            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs capitalize">
               {selectedBrand}
             </span>
           )}
           {selectedModel && (
-            <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+            <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
               {selectedModel}
             </span>
           )}
         </div>
-        <div className="flex items-center space-x-4">
-          <span className="text-sm text-gray-600">Vue</span>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-600 hidden sm:inline">Vue</span>
           <span className="text-sm text-gray-900 font-medium">9 par page</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      {/* Grille de produits */}
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {sortedProducts.map((product) => (
-          <div key={product.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-shadow">
-            {/* Product Image */}
-            <div className="relative mb-4">
+          <div key={product.id} className="group bg-white rounded-lg border border-gray-200 p-3 sm:p-4 hover:shadow-lg transition-all duration-300">
+            {/* Image du produit */}
+            <div className="relative mb-3 sm:mb-4">
               <div className="aspect-square bg-gray-50 rounded-lg overflow-hidden">
                 <img 
                   src={product.image} 
                   alt={product.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
                 />
               </div>
               {product.isNew && (
@@ -227,66 +210,76 @@ export default function ProductGrid({ selectedBrand, selectedModel, filters }: P
               )}
             </div>
 
-            {/* Product Info */}
-            <div className="space-y-3">
+            {/* Informations sur le produit */}
+            <div className="space-y-2 sm:space-y-3">
               <div>
-                <h3 className="font-semibold text-gray-900">{product.title}</h3>
-                <p className="text-sm text-gray-600">{product.subtitle}</p>
-                <p className="text-xs text-gray-500 capitalize">Compatible: {product.brand}</p>
+                <h3 className="font-semibold text-gray-900 text-sm sm:text-base line-clamp-1">{product.title}</h3>
+                <p className="text-xs sm:text-sm text-gray-600 line-clamp-1">{product.subtitle}</p>
+                <p className="text-xs text-gray-500 capitalize mt-1">Compatible: {product.brand}</p>
               </div>
 
-              {/* Protection bars */}
+              {/* Barres de caractéristiques */}
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-500">Protection</span>
-                  <div className="flex space-x-1">
-                    <div className="w-8 h-1 bg-gray-800 rounded"></div>
-                    <div className="w-8 h-1 bg-gray-300 rounded"></div>
-                    <div className="w-8 h-1 bg-gray-300 rounded"></div>
+                  <div className="flex gap-1">
+                    {[1, 2, 3].map((i) => (
+                      <div 
+                        key={i}
+                        className={`w-6 sm:w-8 h-1 rounded ${i <= product.protection.length ? 'bg-gray-800' : 'bg-gray-300'}`}
+                      ></div>
+                    ))}
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-500">Poids</span>
-                  <div className="flex space-x-1">
-                    <div className="w-8 h-1 bg-gray-800 rounded"></div>
-                    <div className="w-8 h-1 bg-gray-800 rounded"></div>
-                    <div className="w-8 h-1 bg-gray-300 rounded"></div>
+                  <div className="flex gap-1">
+                    {[1, 2, 3].map((i) => (
+                      <div 
+                        key={i}
+                        className={`w-6 sm:w-8 h-1 rounded ${i <= 2 ? 'bg-gray-800' : 'bg-gray-300'}`}
+                      ></div>
+                    ))}
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-500">Épaisseur</span>
-                  <div className="flex space-x-1">
-                    <div className="w-8 h-1 bg-gray-800 rounded"></div>
-                    <div className="w-8 h-1 bg-gray-300 rounded"></div>
-                    <div className="w-8 h-1 bg-gray-300 rounded"></div>
+                  <div className="flex gap-1">
+                    {[1, 2, 3].map((i) => (
+                      <div 
+                        key={i}
+                        className={`w-6 sm:w-8 h-1 rounded ${i <= 1 ? 'bg-gray-800' : 'bg-gray-300'}`}
+                      ></div>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              {/* Price */}
+              {/* Prix */}
               <div>
-                <div className="text-lg font-semibold text-gray-900">à partir de {product.price} €</div>
-                <div className="text-xs text-gray-500">TVA incluse, frais de livraison non inclus</div>
+                <div className="text-base sm:text-lg font-semibold text-gray-900">à partir de {product.price} €</div>
+                <div className="text-xs text-gray-500 hidden sm:block">TVA incluse, frais de livraison non inclus</div>
               </div>
 
-              {/* Colors */}
-              <div className="flex space-x-2">
+              {/* Couleurs */}
+              <div className="flex gap-1 sm:gap-2">
                 {product.colors.map((color, index) => (
                   <div
                     key={index}
-                    className="w-5 h-5 rounded-full border border-gray-300 cursor-pointer hover:scale-110 transition-transform"
+                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border border-gray-300 cursor-pointer hover:scale-110 transition-transform"
                     style={{ backgroundColor: color }}
+                    title={`Couleur ${index + 1}`}
                   ></div>
                 ))}
               </div>
 
-              {/* Buttons */}
-              <div className="flex space-x-2">
-                <Button variant="outline" className="flex-1 text-xs">
-                  INFORMATIONS
+              {/* Boutons */}
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1 text-xs h-8 sm:h-9">
+                  INFO
                 </Button>
-                <Button className="flex-1 bg-gray-900 hover:bg-gray-800 text-white text-xs">
-                  CHOISIR UN DESIGN
+                <Button size="sm" className="flex-1 bg-gray-900 hover:bg-gray-800 text-white text-xs h-8 sm:h-9">
+                  DESIGN
                   <ChevronRight className="h-3 w-3 ml-1" />
                 </Button>
               </div>
@@ -295,10 +288,11 @@ export default function ProductGrid({ selectedBrand, selectedModel, filters }: P
         ))}
       </div>
       
+      {/* Aucun résultat */}
       {sortedProducts.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-gray-500 text-lg mb-2">Aucun produit trouvé</div>
-          <div className="text-gray-400 text-sm">
+        <div className="text-center py-8 sm:py-12">
+          <div className="text-gray-500 text-base sm:text-lg mb-2">Aucun produit trouvé</div>
+          <div className="text-gray-400 text-sm sm:text-base">
             Essayez de modifier vos filtres ou sélectionnez une autre marque
           </div>
         </div>
